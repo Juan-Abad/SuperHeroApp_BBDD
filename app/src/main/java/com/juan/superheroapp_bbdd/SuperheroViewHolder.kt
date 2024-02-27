@@ -2,8 +2,6 @@ package com.juan.superheroapp_bbdd
 
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView
-import com.juan.superheroapp_bbdd.data.SuperheroItemResponse
-import com.juan.superheroapp_bbdd.data.database.entities.HeroDetailEntity
 import com.juan.superheroapp_bbdd.data.database.entities.HeroEntity
 import com.juan.superheroapp_bbdd.databinding.ItemSuperheroBinding
 import com.squareup.picasso.Picasso
@@ -17,6 +15,5 @@ class SuperheroViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         binding.root.setOnClickListener {
             navigateToDetailActivity(superheroItem.id.toString())
         }
-
     }
 }

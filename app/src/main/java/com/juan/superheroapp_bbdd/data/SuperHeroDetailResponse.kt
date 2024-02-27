@@ -2,7 +2,12 @@ package com.juan.superheroapp_bbdd.data
 
 import com.google.gson.annotations.SerializedName
 
+
 data class SuperHeroDetailResponse(
+    @SerializedName("response") val response: String,
+    @SerializedName("results") val superheroes: List<SuperHeroMainResponse>
+)
+data class SuperHeroMainResponse(
     @SerializedName("powerstats") val powerstats: PowerStatsResponse,
     @SerializedName("biography") val biography: Biography
 )
@@ -19,5 +24,3 @@ data class Biography(
     @SerializedName("full-name") val fullName:String,
     @SerializedName("publisher") val publisher:String
 )
-
-

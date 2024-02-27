@@ -4,6 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.juan.superheroapp_bbdd.data.SuperHeroDetailResponse
+import com.juan.superheroapp_bbdd.data.SuperHeroMainResponse
 import com.juan.superheroapp_bbdd.data.SuperheroItemResponse
 
 @Entity(tableName = "HeroDetail_table")
@@ -20,7 +21,7 @@ data class HeroDetailEntity(
     @ColumnInfo(name = "publisher") val publisher: String
 )
 
-fun SuperHeroDetailResponse.toDatabase() = HeroDetailEntity(
+fun SuperHeroMainResponse.toDatabase() = HeroDetailEntity(
     intelligence = powerstats.intelligence,
     strength = powerstats.strength,
     speed = powerstats.speed,

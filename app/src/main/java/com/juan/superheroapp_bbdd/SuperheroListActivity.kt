@@ -10,7 +10,6 @@ import androidx.room.Room
 import com.juan.superheroapp_bbdd.databinding.ActivitySuperheroListBinding
 import com.juan.superheroapp_bbdd.data.ApiService
 import com.juan.superheroapp_bbdd.data.SuperHeroDataResponse
-import com.juan.superheroapp_bbdd.data.SuperHeroDetailResponse
 import com.juan.superheroapp_bbdd.data.database.HeroDatabase
 import com.juan.superheroapp_bbdd.data.database.entities.HeroEntity
 import com.juan.superheroapp_bbdd.data.database.entities.toDatabase
@@ -25,10 +24,6 @@ class SuperheroListActivity : AppCompatActivity() {
 
     private lateinit var room: HeroDatabase
 
-    companion object {
-        const val EXTRA_ID = "extra_id"
-    }
-
     private lateinit var binding: ActivitySuperheroListBinding
     private lateinit var retrofit: Retrofit
 
@@ -39,7 +34,6 @@ class SuperheroListActivity : AppCompatActivity() {
         binding = ActivitySuperheroListBinding.inflate(layoutInflater)
         setContentView(binding.root)
         room = Room.databaseBuilder(this, HeroDatabase::class.java, "superheroes").build()
-
         retrofit = getRetrofit()
 
         fillDatabase()
@@ -49,24 +43,24 @@ class SuperheroListActivity : AppCompatActivity() {
     private fun fillDatabase() {
         CoroutineScope(Dispatchers.IO).launch {
             room.getHeroDao().deleteAllHero()
-            room.getHeroDao().deleteAllHeroDetail()
-            CoroutineScope(Dispatchers.IO).launch {
-                val myHeroResponse: Response<SuperHeroDataResponse> =
-                    retrofit.create(ApiService::class.java).getSuperheroes()
+            room.getHeroDao().deletePrimaryKeyIndexHero()
 
-                myHeroResponse.body()?.superheroes?.let {
-                    room.getHeroDao().insertAll(it.map { it.toDatabase() })
-                }
-                val superheroes = myHeroResponse.body()?.superheroes
-                superheroes?.iterator()?.let { iterator ->
-                    while (iterator.hasNext()) {
-                        val HeroDetail = retrofit.create(ApiService::class.java).getSuperheroDetail(iterator.next().superheroId)
-                        HeroDetail.body()
-                            ?.let { room.getHeroDao().insertHeroDetail(it.toDatabase()) }
-                    }
-                }
+            room.getHeroDao().deleteAllHeroDetail()
+            room.getHeroDao().deletePrimaryKeyIndexHeroDetail()
+            val myHeroResponse: Response<SuperHeroDataResponse> =
+                retrofit.create(ApiService::class.java).getSuperheroes()
+
+            myHeroResponse.body()?.superheroes?.let {
+                room.getHeroDao().insertAll(it.map { it.toDatabase() })
+                System.out.println(room.getHeroDao().getAllHero())
+            }
+            val myHeroDetailResponse = retrofit.create(ApiService::class.java).getSuperheroDetail()
+            myHeroDetailResponse.body()?.superheroes?.let {
+                room.getHeroDao().insertAllHeroDetail(it.map { it.toDatabase() })
+                System.out.println(room.getHeroDao().getHeroDetail())
             }
         }
+
     }
 
     private fun initUI() {
@@ -88,7 +82,6 @@ class SuperheroListActivity : AppCompatActivity() {
         binding.progressBar.isVisible = true
         CoroutineScope(Dispatchers.IO).launch {
             val listHero: List<HeroEntity> = room.getHeroDao().getHeroByName(query + "%")
-
 
             if (listHero.isNotEmpty()) {
                 runOnUiThread {
@@ -112,5 +105,4 @@ class SuperheroListActivity : AppCompatActivity() {
         intent.putExtra("idHero", id)
         startActivity(intent)
     }
-
 }

@@ -11,7 +11,7 @@ import com.juan.superheroapp_bbdd.data.database.entities.HeroEntity
 interface HeroDao {
 
     //hero_table functions
-    @Query("SELECT * FROM hero_table ORDER BY name DESC")
+    @Query("SELECT * FROM hero_table")
     suspend fun getAllHero(): List<HeroEntity>
 
     @Query("SELECT * FROM hero_table WHERE name LIKE :name ORDER BY name DESC")
@@ -23,6 +23,11 @@ interface HeroDao {
     @Query("DELETE FROM hero_table")
     suspend fun deleteAllHero()
 
+    @Query("SELECT * FROM hero_table WHERE id = :id")
+    suspend fun getHeroById(id: String): HeroEntity
+
+    @Query("DELETE FROM sqlite_sequence WHERE name LIKE 'hero_table'")
+    suspend fun deletePrimaryKeyIndexHero()
 
     //HeroDetail_table functions
     @Query("DELETE FROM HeroDetail_table")
@@ -36,4 +41,10 @@ interface HeroDao {
 
     @Query("SELECT * FROM HeroDetail_table WHERE id = :id")
     suspend fun getHeroDetailById(id: Int): HeroDetailEntity
+
+    @Query("SELECT * FROM HeroDetail_table")
+    suspend fun getHeroDetail(): List<HeroDetailEntity>
+
+    @Query("DELETE FROM sqlite_sequence WHERE name = 'HeroDetail_table'")
+    suspend fun deletePrimaryKeyIndexHeroDetail()
 }
