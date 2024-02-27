@@ -1,4 +1,4 @@
-package com.juan.superheroapp_bbdd
+package com.juan.superheroapp_bbdd.data
 
 import com.google.gson.annotations.SerializedName
 
@@ -9,6 +9,6 @@ data class SuperHeroDataResponse(
 data class SuperheroItemResponse(
     @SerializedName("id") val superheroId: String,
     @SerializedName("name") val name: String,
-    @SerializedName("image") val superheroImage:SuperheroImageResponse
+    @SerializedName("image") val superheroImage: SuperheroImageResponse
 )
 data class SuperheroImageResponse(@SerializedName("url") val url:String)

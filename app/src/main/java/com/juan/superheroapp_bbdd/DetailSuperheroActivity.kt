@@ -4,7 +4,13 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.View
+import androidx.room.Room
 import com.juan.superheroapp_bbdd.SuperheroListActivity.Companion.EXTRA_ID
+import com.juan.superheroapp_bbdd.data.ApiService
+import com.juan.superheroapp_bbdd.data.PowerStatsResponse
+import com.juan.superheroapp_bbdd.data.SuperHeroDetailResponse
+import com.juan.superheroapp_bbdd.data.database.HeroDatabase
+import com.juan.superheroapp_bbdd.data.database.entities.HeroDetailEntity
 import com.juan.superheroapp_bbdd.databinding.ActivityDetailSuperheroBinding
 import com.squareup.picasso.Picasso
 import kotlinx.coroutines.CoroutineScope
@@ -16,43 +22,39 @@ import kotlin.math.roundToInt
 
 class DetailSuperheroActivity : AppCompatActivity() {
 
+    private lateinit var room: HeroDatabase
+
     private lateinit var binding: ActivityDetailSuperheroBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityDetailSuperheroBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val id: String = intent.getStringExtra(EXTRA_ID).orEmpty()
+        room = Room.databaseBuilder(this, HeroDatabase::class.java, "superheroes").build()
+
+        val id: String = intent.getStringExtra("idHero").orEmpty()
         getSuperheroInformation(id)
     }
 
     private fun getSuperheroInformation(id: String) {
         CoroutineScope(Dispatchers.IO).launch {
-            val superheroDetail =
-                getRetrofit().create(ApiService::class.java).getSuperheroDetail(id)
-            if(superheroDetail.body() != null){
-                runOnUiThread { createUI(superheroDetail.body()!!) }
-            }
+            System.out.println(id)
+            val superheroDetail = room.getHeroDao().getHeroDetailById(id.toInt())
+            System.out.println(superheroDetail)
+            runOnUiThread { createUI(superheroDetail) }
+
         }
     }
 
-    private fun createUI(superhero: SuperHeroDetailResponse) {
-        Picasso.get().load(superhero.image.url).into(binding.ivSuperhero)
-        binding.tvSuperheroName.text = superhero.name
-        binding.tvSuperheroRealName.text = superhero.biography.fullName
-        binding.tvPublisher.text = superhero.biography.publisher
-        binding.tvDescription.text = "${superhero.name} es de la raza de los ${superhero.appearance.race}," +
-                "nació en ..., mide ${superhero.appearance.height[1]} y pesa ${superhero.appearance.weight[1]}."
-        var alias: String =""
-        for(nombre in superhero.biography.aliases) {
-            alias += "$nombre, "
-        }
-        binding.tvAlias.text = "Se le conoce también como $alias"
-        binding.tvStarting.text = "Su primera aparición fue en ${superhero.biography.starting}"
-        prepareStats(superhero.powerstats)
+    private fun createUI(superhero: HeroDetailEntity) {
+        //Picasso.get().load(superhero.image.url).into(binding.ivSuperhero)
+        //binding.tvSuperheroName.text = superhero.name
+        binding.tvSuperheroRealName.text = superhero.fullName
+        binding.tvPublisher.text = superhero.publisher
+        prepareStats(superhero)
     }
 
-    private fun prepareStats(powerstats: PowerStatsResponse) {
+    private fun prepareStats(powerstats: HeroDetailEntity) {
         updateHeight(binding.viewIntelligence, powerstats.intelligence)
         updateHeight(binding.viewStrength, powerstats.strength)
         updateHeight(binding.viewSpeed, powerstats.speed)
@@ -61,24 +63,19 @@ class DetailSuperheroActivity : AppCompatActivity() {
         updateHeight(binding.viewCombat, powerstats.combat)
     }
 
-    private fun updateHeight(view: View, stat:String){
+    private fun updateHeight(view: View, stat: String) {
         val params = view.layoutParams
-        if(stat=="null"){params.height=pxToDp(0.toFloat())}
-        else{params.height = pxToDp(stat.toFloat())}
+        if (stat == "null") {
+            params.height = pxToDp(0.toFloat())
+        } else {
+            params.height = pxToDp(stat.toFloat())
+        }
         view.layoutParams = params
     }
 
-    private fun pxToDp(px:Float):Int{
-        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, px, resources.displayMetrics).roundToInt()
-    }
-
-
-    private fun getRetrofit(): Retrofit {
-        return Retrofit
-            .Builder()
-            .baseUrl("https://superheroapi.com/")
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
+    private fun pxToDp(px: Float): Int {
+        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, px, resources.displayMetrics)
+            .roundToInt()
     }
 
 }
